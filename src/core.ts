@@ -11,12 +11,15 @@ import mermaid from 'mermaid';
 
 export class MobXVisualizer implements IMobxVisualizer {
   events: VisualizerEvent[] = [];
+  isInitialized = false;
   private options: VisualizerOptions;
 
   constructor(options: VisualizerOptions = {}) {
     this.options = options;
     configure({ enforceActions: 'observed' });
     this.setupSpy();
+    this.setupDom();
+    this.isInitialized = true;
   }
 
   private setupSpy() {
@@ -24,11 +27,10 @@ export class MobXVisualizer implements IMobxVisualizer {
       try {
         if (shouldTrackEvent(event, this.options)) {
           const visualizerEvent = processEventType(event);
-          if (visualizerEvent) {
-            if (this.options?.debug) logExplanation(visualizerEvent);
-            this.events = [...this.events, visualizerEvent];
-            this.options.eventHook?.(visualizerEvent);
-          }
+          if (!visualizerEvent) return;
+          if (this.options?.debug) logExplanation(visualizerEvent);
+          this.events = [...this.events, visualizerEvent];
+          this.options.eventHook?.(visualizerEvent);
         }
       } catch (error) {
         console.warn('Failed to track MobX event:', error);
@@ -44,6 +46,31 @@ export class MobXVisualizer implements IMobxVisualizer {
     this.events = [];
   }
 
+  private setupDom() {
+    if (this.isInitialized) return;
+    const downloadButton = document.createElement('button');
+    downloadButton.innerText = 'Download Mobx Sequence Diagram';
+    downloadButton.style.position = 'fixed';
+    downloadButton.style.bottom = '20px';
+    downloadButton.style.right = '20px';
+    downloadButton.style.zIndex = '9999';
+    downloadButton.style.padding = '10px';
+    downloadButton.style.border = 'none';
+    downloadButton.style.backgroundColor = '#000';
+    downloadButton.style.color = '#fff';
+    downloadButton.style.cursor = 'pointer';
+    downloadButton.style.borderRadius = '5px';
+    downloadButton.style.fontSize = '16px';
+    downloadButton.style.fontWeight = 'bold';
+    downloadButton.style.boxShadow = '0 5px 10px rgba(0,0,0,0.2)';
+
+    downloadButton.onclick = async () => {
+      const blobURL = await this.renderSVG();
+      window.open(blobURL, '_blank');
+    };
+    document.body.appendChild(downloadButton);
+  }
+
   public async renderSVG(): Promise<string> {
     const diagram = formatToSequenceDiagram(this.events);
     await mermaid.initialize({
@@ -53,7 +80,7 @@ export class MobXVisualizer implements IMobxVisualizer {
     });
 
     // Render the SVG
-    const { svg } = await mermaid.render('mobx-sequence-diagram', diagram);
+    const { svg } = await mermaid.render('movis-sequence-diagram', diagram);
 
     // Create a Blob for the SVG data
     const blob = new Blob([svg], { type: 'image/svg+xml' });
@@ -62,12 +89,12 @@ export class MobXVisualizer implements IMobxVisualizer {
     const blobURL = URL.createObjectURL(blob);
 
     // Log the Blob URL to the console
-    console.log('Download or open the diagram:', blobURL);
+    console.log('Download or open the Mobx diagram:', blobURL);
 
     // Create a download link (optional)
     const link = document.createElement('a');
     link.href = blobURL;
-    link.download = 'sequence-diagram.svg';
+    link.download = 'movis.svg';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

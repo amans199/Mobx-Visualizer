@@ -25,11 +25,11 @@ export const shouldTrackEvent = (
 ): boolean => {
   if (!event || !event.type) return false;
 
-  const objectName = _getObjectName(event.object);
+  const storeName = _getObjectName(event.object);
 
-  if (!objectName) return false;
+  if (!storeName) return false;
 
-  if (options.excludeStores?.includes(objectName)) {
+  if (options.excludeStores?.includes(storeName)) {
     return false;
   }
 
@@ -57,16 +57,13 @@ export const formatToSequenceDiagram = events => {
     .map(event => event.object)
     .filter((value, index, self) => self.indexOf(value) === index);
 
-  console.log('🚀 ~ formatToSequenceDiagram ~ objects:', events, objects);
   const participants = objects
     .map(objectName => {
       return `participant ${objectName}`;
     })
     .join('\n');
-  console.log('🚀 ~ formatToSequenceDiagram ~ participants:', participants);
 
   const diagramData = events.map(event => formatSingleEvent(event)).join('\n');
-  console.log('🚀 ~ formatToSequenceDiagram ~ diagramData:', diagramData);
 
   const diagram = `sequenceDiagram
   ${participants}
@@ -93,9 +90,11 @@ const formatSingleEvent = (visualizerEvent: VisualizerEvent) => {
   }
 };
 
+// TODO!: Figure out the best way to et the object name for all event types
 const _getObjectName = (target: any): string | null => {
   if (!target) return null;
   try {
+    if (target?.constructor?.name !== 'Object') return target.constructor.name;
     const debugName = getDebugName(target);
     return extractStoreName(debugName);
   } catch (error) {
