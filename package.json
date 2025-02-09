@@ -1,6 +1,6 @@
 {
   "name": "mobx-visualizer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Visualizer of MobX events using sequence diagrams",
   "main": "./lib/index.js",
   "files": [
