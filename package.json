@@ -1,7 +1,7 @@
 {
   "name": "mobx-visualizer",
   "version": "1.0.0",
-  "description": "A powerful, dependency-free color manipulation library",
+  "description": "Visualizer of MobX events using sequence diagrams",
   "main": "./lib/index.js",
   "files": [
     "lib/**/*"
