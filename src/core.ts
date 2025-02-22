@@ -30,7 +30,8 @@ export class MobXVisualizer implements IMobxVisualizer {
         if (shouldTrackEvent(event, this.options)) {
           const visualizerEvent = processEventType(event);
           if (!visualizerEvent) return;
-
+          if (visualizerEvent.name === 'completed')
+            console.log({ event, visualizerEvent });
           if (this.options?.debug) logExplanation(visualizerEvent);
           this.events = [...this.events, visualizerEvent];
 

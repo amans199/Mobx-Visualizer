@@ -36,13 +36,15 @@ export const processEventType = (event: any): VisualizerEvent | null => {
 
   const eventName = event.name || extractEventName(event.debugObjectName);
 
+  const debugObjectName = event.debugObjectName.split('@')[0] || '';
+
   return {
     event,
     id: uuidv4(),
     timestamp: new Date().getTime(),
     type: event.type,
     name: eventName,
-    object: objectName,
+    object: objectName !== 'Unknown' ? objectName : debugObjectName,
   };
 };
 
